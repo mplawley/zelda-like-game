@@ -1,7 +1,19 @@
-﻿using UnityEngine;
+﻿/*
+ * This script controls the Mage avatar
+ * 
+ */
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
+/* ======================================================================================== 
+ * ========================================================================================
+ * ======================================DATA==============================================
+ * ========================================================================================
+ * ======================================================================================== 
+ */
 
 //The MPhase enum is used to track the phase of mouse interaction
 public enum MPhase
@@ -38,6 +50,13 @@ public class MouseInfo
 
 public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 {
+/* ======================================================================================== 
+ * ========================================================================================
+ * ======================================FIELDS============================================
+ * ========================================================================================
+ * ======================================================================================== 
+ */
+
 	public static Mage S;
 	public static bool DEBUG = true;
 
@@ -46,15 +65,31 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 	public float activeScreenWidth = 1; //% of the screen to use
 
+	public float speed = 2; //The speed at which the mage character walks
+
 	[Header("-------------------")]
 
 	public MPhase mPhase = MPhase.idle;
 	public List<MouseInfo> mouseInfos = new List<MouseInfo>();
 
+	public bool walking = false;
+	public Vector3 walkTarget;
+	public Transform characterTrans;
+
+/* ======================================================================================== 
+ * ========================================================================================
+ * ======================================GENERAL METHODS===================================
+ * ========================================================================================
+ * ======================================================================================== 
+ */
+
 	void Awake()
 	{
 		S = this; //Mage Singleton
 		mPhase = MPhase.idle;
+
+		//Find the characterTrans to rotate with Face()
+		characterTrans = transform.Find("CharacterTrans");
 	}
 
 	void Update()
@@ -128,6 +163,13 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		}
 	}
 
+/* ======================================================================================== 
+ * ========================================================================================
+ * ======================================TOUCH/MOUSE METHODS=====================================
+ * ========================================================================================
+ * ======================================================================================== 
+ */
+
 	//Pulls info about the Mouse, adds it to mouseInfos, and returns it
 	MouseInfo AddMouseInfo()
 	{
@@ -158,7 +200,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 	public MouseInfo lastMouseInfo
 	{
-		//Access to the latest MouseINfo
+		//Access to the latest MouseInfo
 		get
 		{
 			if (mouseInfos.Count == 0)
@@ -185,6 +227,8 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		{
 			print("Mage.MouseTap()");
 		}
+
+		WalkTo(lastMouseInfo.loc); //Wal to the latest mouseInfo pos
 	}
 
 	void MouseDrag()
@@ -202,6 +246,79 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		if (DEBUG)
 		{
 			print("Mage.MouseDragUp()");
+		}
+	}
+
+/* ======================================================================================== 
+ * ========================================================================================
+ * ======================================MOVEMENT METHODS==================================
+ * ========================================================================================
+ * ======================================================================================== 
+ */
+
+	//Walk to a specific position. The position.z is always 0
+	public void WalkTo(Vector3 xTarget)
+	{
+		walkTarget = xTarget; //Set the point to walk to
+		walkTarget.z = 0; //Force z = 0
+		walking = true; //Now the mage is walking
+		Face(walkTarget); //Look in the direction of the walkTarget
+	}
+
+	//Face toward a point of interest
+	public void Face(Vector3 poi)
+	{
+		Vector3 delta = poi - pos; //Find vector to the point of interest
+
+		//Use Atan2 to get the rotation around Z that points the X-axis of _Mage:CharacterTrans toward poi
+		float rZ = Mathf.Rad2Deg * Mathf.Atan2(delta.y, delta.x);
+
+		//Set the rotation of characterTrans--doesn't actually rotate _Mage
+		characterTrans.rotation = Quaternion.Euler(0, 0, rZ);
+	}
+
+	public void StopWalking() //Stops the _Mage fromwalking
+	{
+		walking = false;
+		GetComponent<Rigidbody>().velocity = Vector3.zero;
+	}
+
+	void FixedUpdate() //Happens every physics step (i.e., 50 times.second)
+	{
+		if (walking) //If the Mage is walking
+		{
+			if ((walkTarget - pos).magnitude < speed * Time.fixedDeltaTime)
+			{
+				//If Mage is very close to walkTarget, stop there
+				pos = walkTarget;
+				StopWalking();
+			}
+			else
+			{
+				//Otherwise, move toward walkTarget
+				GetComponent<Rigidbody>().velocity = (walkTarget - pos).normalized * speed;
+			}
+		}
+		else
+		{
+			//If not walking, velocity should be zero
+			GetComponent<Rigidbody>().velocity = Vector3.zero;
+		}
+	}
+
+	void OnCollisionEnter(Collision coll)
+	{
+		GameObject otherGO = coll.gameObject;
+
+		//Colliding with a wall can also stop walking
+		Tile ti = otherGO.GetComponent<Tile>();
+		if (ti != null)
+		{
+			if (ti.height > 0) //If ti.height is > 0
+			{
+				//Then this ti is a wall, and Mage should stop
+				StopWalking();
+			}
 		}
 	}
 }
