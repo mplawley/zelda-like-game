@@ -73,7 +73,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		 * 4. Tap on an enemy to attack (or force-push away without an element)
 		 * */
 
-		bool inActiveArea = (float)Input.mousePosition.x / activeScreenWidth < activeScreenWidth; //using < to return a bool value
+		bool inActiveArea = (float)Input.mousePosition.x / Screen.width < activeScreenWidth; //using < to return a bool value
 
 		//This is handled as an if statement instead of switch because a tap can sometimes happen within a single frame
 		if (mPhase == MPhase.idle) //If the mouse is idle

@@ -125,11 +125,11 @@ public class PT_Loc {
 		// Create locsL, which is all but the last element of locs
 		// e.g. if locs = [0,1,2,3,4] then locsL = [0,1,2,3]
 		PT_Loc[] locsL = new PT_Loc[len];
-		PT_Loc[].Copy(locs, 0, locsL, 0, len);
+		PT_Loc[].Copy(locs, 0, locsL, 0, len); //Not normally commented out
 		// Create locsR, which is all but the 0th element of locs
 		// e.g. if locs = [0,1,2,3,4] then locsR = [1,2,3,4]
 		PT_Loc[] locsR = new PT_Loc[len];
-		PT_Loc[].Copy(locs, 1, locsR, 0, len);
+		PT_Loc[].Copy(locs, 1, locsR, 0, len); //Not normally commented out
 
 		// The result is the Lerp of these two shorter Lists
 		PT_Loc res = Lerp( Bezier(u, locsL), Bezier(u, locsR), u );
@@ -153,9 +153,6 @@ public class PT_Loc {
 		l.color = color;
 		return(l);
 	}
-
-
-
 
 	/*
 	 * 	static public Vector3 Bezier( float u, List<Vector3> vList ) {
