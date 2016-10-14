@@ -88,6 +88,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 	public MPhase mPhase = MPhase.idle;
 	public List<MouseInfo> mouseInfos = new List<MouseInfo>();
+	public string actionStartTg; //["Mage", "Ground", "Enemy"]
 
 	public bool walking = false;
 	public Vector3 walkTarget;
@@ -251,6 +252,21 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		{
 			print("Mage.MouseDown()");
 		}
+
+		//If the mouse wasn't clicked on anything, this would throw an error because hitInfo would be null.
+		//However, we know that MouseDown() is only called when the mouse WAS clicked on something,
+		//so hitInfo is guaranteed to be defined...
+		GameObject clickedGO = mouseInfos[0].hitInfo.collider.gameObject;
+
+		GameObject taggedParent = Utils.FindTaggedParent(clickedGO);
+		if (taggedParent == null)
+		{
+			actionStartTg = "";
+		}
+		else
+		{
+			actionStartTg = taggedParent.tag; //This should be "Ground", "Mage", or "Enemy"
+		}
 	}
 
 	void MouseTap()
@@ -261,8 +277,18 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			print("Mage.MouseTap()");
 		}
 
-		WalkTo(lastMouseInfo.loc); //Walk to the latest mouseInfo pos
-		ShowTap(lastMouseInfo.loc); //Show where the player tapped
+		//Depending on what was tapped...
+		switch (actionStartTg)
+		{
+		case "Mage":
+			//Do nothing
+			break;
+		case "Ground":
+			//Move to tapped point @ z = 0 whether or not element is selected
+			WalkTo(lastMouseInfo.loc); //Walk to the latest mouseInfo pos
+			ShowTap(lastMouseInfo.loc); //Show where the player tapped
+			break;
+		}
 	}
 
 	void MouseDrag()
@@ -272,9 +298,18 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		{
 			print("Mage.MouseDrag()");
 		}
+		//Drag is only meaningful if the mouse started on the ground
+		if (actionStartTg != "Ground")
+		{
+			return;
+		}
 
-		//Continuously walk toward the current mouseInfo pos
-		WalkTo(mouseInfos[mouseInfos.Count - 1].loc);
+		//If there is no element selected, the player should follow the mouse
+		if (selectedElements.Count == 0)
+		{
+			//Continuously walk toward the current mouseInfo pos
+			WalkTo(mouseInfos[mouseInfos.Count - 1].loc);
+		}
 	}
 
 	void MouseDragUp()
@@ -285,8 +320,18 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			print("Mage.MouseDragUp()");
 		}
 
-		//Stop walking when the drag is stopped
-		StopWalking();
+		//Drag is only meaningful if the mouse started on the ground
+		if (actionStartTg != "Ground")
+		{
+			return;
+		}
+
+		//If there is no element selected, stop walking now
+		if (selectedElements.Count == 0)
+		{
+			//Stop walking when the drag is stopped
+			StopWalking();
+		}
 	}
 
 /* ======================================================================================== 
