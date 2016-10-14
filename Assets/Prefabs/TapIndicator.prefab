@@ -10,6 +10,7 @@ GameObject:
   - 4: {fileID: 400000}
   - 33: {fileID: 3300000}
   - 23: {fileID: 2300000}
+  - 114: {fileID: 114000010528779386}
   m_Layer: 0
   m_Name: TapIndicator
   m_TagString: Untagged
@@ -77,3 +78,30 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 100000}
   m_IsPrefabParent: 1
+--- !u!114 &114000010528779386
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbcbb0a6e670e4660a6d2d28f4c89af7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ptm_locs: []
+  ptm_start: 0
+  ptm_duration: 0
+  ptm_state: 0
+  ptm_easing: ',InOut|'
+  ptm_u: 0
+  ptm_u2: 0
+  lifeTime: 0.4
+  scales:
+  - 0
+  - 0.8
+  - 0.4
+  colors:
+  - {r: 1, g: 1, b: 1, a: 0.54901963}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 0}
