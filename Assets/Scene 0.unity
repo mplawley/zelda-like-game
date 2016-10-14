@@ -276,6 +276,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c87926ef40e140328dd22840349f869, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mTapTime: 0.1
+  tapIndicatorPrefab: {fileID: 100000, guid: 65bee36374982469f8b4797b1b515e38, type: 2}
+  mDragDist: 5
+  activeScreenWidth: 1
+  speed: 2
+  mPhase: 0
+  mouseInfos: []
+  walking: 0
+  walkTarget: {x: 0, y: 0, z: 0}
+  characterTrans: {fileID: 0}
 --- !u!1 &697990196
 GameObject:
   m_ObjectHideFlags: 0

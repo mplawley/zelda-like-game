@@ -61,6 +61,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 	public static bool DEBUG = true;
 
 	public float mTapTime = 0.1f; //How long is considered a tap
+	public GameObject tapIndicatorPrefab;
 	public float mDragDist = 5; //Min dist in pixels to be a drag
 
 	public float activeScreenWidth = 1; //% of the screen to use
@@ -75,6 +76,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 	public bool walking = false;
 	public Vector3 walkTarget;
 	public Transform characterTrans;
+	Rigidbody rb;
 
 /* ======================================================================================== 
  * ========================================================================================
@@ -90,6 +92,11 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 		//Find the characterTrans to rotate with Face()
 		characterTrans = transform.Find("CharacterTrans");
+	}
+
+	void Start()
+	{
+		rb = GetComponent<Rigidbody>();
 	}
 
 	void Update()
@@ -207,7 +214,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			{
 				return null;
 			}
-			return mouseInfos[mouseInfos.Count - 1];
+			return (mouseInfos[mouseInfos.Count - 1]);
 		}
 	}
 
@@ -228,7 +235,8 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			print("Mage.MouseTap()");
 		}
 
-		WalkTo(lastMouseInfo.loc); //Wal to the latest mouseInfo pos
+		WalkTo(lastMouseInfo.loc); //Walk to the latest mouseInfo pos
+		ShowTap(lastMouseInfo.loc); //Show where the player tapped
 	}
 
 	void MouseDrag()
@@ -238,6 +246,9 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		{
 			print("Mage.MouseDrag()");
 		}
+
+		//Continuously walk toward the current mouseInfo pos
+		WalkTo(mouseInfos[mouseInfos.Count - 1].loc);
 	}
 
 	void MouseDragUp()
@@ -247,6 +258,9 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		{
 			print("Mage.MouseDragUp()");
 		}
+
+		//Stop walking when the drag is stopped
+		StopWalking();
 	}
 
 /* ======================================================================================== 
@@ -280,7 +294,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 	public void StopWalking() //Stops the _Mage fromwalking
 	{
 		walking = false;
-		GetComponent<Rigidbody>().velocity = Vector3.zero;
+		rb.velocity = Vector3.zero;
 	}
 
 	void FixedUpdate() //Happens every physics step (i.e., 50 times.second)
@@ -296,13 +310,13 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			else
 			{
 				//Otherwise, move toward walkTarget
-				GetComponent<Rigidbody>().velocity = (walkTarget - pos).normalized * speed;
+				rb.velocity = (walkTarget - pos).normalized * speed;
 			}
 		}
 		else
 		{
 			//If not walking, velocity should be zero
-			GetComponent<Rigidbody>().velocity = Vector3.zero;
+			rb.velocity = Vector3.zero;
 		}
 	}
 
@@ -320,5 +334,12 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 				StopWalking();
 			}
 		}
+	}
+
+	//Show where the player tapped
+	public void ShowTap(Vector3 loc)
+	{
+		GameObject go = Instantiate(tapIndicatorPrefab) as GameObject;
+		go.transform.position = loc;
 	}
 }
