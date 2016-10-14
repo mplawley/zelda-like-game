@@ -646,4 +646,10 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		liner.enabled = false; //Not only disable the LineRenderer but also...
 		linePts.Clear(); //clear all linePts
 	}
+
+	//Stop any active drag or other mouse input
+	public void ClearInput()
+	{
+		mPhase = MPhase.idle;
+	}
 }
