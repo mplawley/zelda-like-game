@@ -217,7 +217,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		if (mouseInfos.Count == 0)
 		{
 			//If this is the first mouseInfo
-			mouseInfos.Add(mInfo); //Add mInfo to mouseINfos
+			mouseInfos.Add(mInfo); //Add mInfo to mouseInfos
 		}
 		else
 		{
@@ -344,8 +344,8 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 	//Walk to a specific position. The position.z is always 0
 	public void WalkTo(Vector3 xTarget)
 	{
-		walkTarget = xTarget; //Set the point to walk to
-		walkTarget.z = 0; //Force z = 0
+		walkTarget = xTarget; //Set the x-y coordinates of the point to walk to
+		walkTarget.z = 0; //But force z coordinate to = 0
 		walking = true; //Now the mage is walking
 		Face(walkTarget); //Look in the direction of the walkTarget
 	}

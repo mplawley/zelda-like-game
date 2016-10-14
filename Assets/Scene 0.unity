@@ -365,10 +365,22 @@ MonoBehaviour:
   maxNumSelectedElements: 1
   mPhase: 0
   mouseInfos: []
+  actionStartTg: 
   walking: 0
   walkTarget: {x: 0, y: 0, z: 0}
   characterTrans: {fileID: 0}
   selectedElements: []
+--- !u!114 &608490786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 608490784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c86dfa5982c346e286038095258b583, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &697990196
 GameObject:
   m_ObjectHideFlags: 0
