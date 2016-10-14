@@ -18,9 +18,11 @@ public class LayoutTiles : MonoBehaviour
 	public string roomNumber = "0"; //Current room number as a string, which allows encoding in the XML and rooms 0-F
 	public GameObject tilePrefab; //Used for all Tiles
 	public TileTex[] tileTextures; //A list of named textures for Tiles
+	public GameObject portalPrefab; //For the portals between rooms
 
 	[Header("------------------------")]
 
+	private bool firstRoom = true; //Is this the first room built?
 	public PT_XMLReader roomsXMLR;
 	public PT_XMLHashList roomsXML;
 	public Tile[,] tiles;
@@ -83,6 +85,17 @@ public class LayoutTiles : MonoBehaviour
 	//Build a room from an XML <room> entry
 	public void BuildRoom (PT_XMLHashtable room)
 	{
+		//Destroy any old tiles
+		foreach (Transform t in tileAnchor) //Clear out old tiles. You can iterate over a Transform to get its children
+		{
+			Destroy(t.gameObject);
+		}
+
+		//Move the Mage out of the way
+		Mage.S.pos = Vector3.left * 1000; //HACK: This keeps the Mage from accidentally triggering OnTriggerExit() on a Portal. OnTriggerExit() is sometimes inappropriately called
+		Mage.S.ClearInput(); //Cancel any active mouse input and drags
+		string rNumStr = room.att("num");
+
 		//Get the texture names for the floors and walls from <room> attributes
 		string floorTexStr = room.att("floor");
 		string wallTexStr = room.att("wall");
@@ -105,6 +118,7 @@ public class LayoutTiles : MonoBehaviour
 		GameObject go;
 		int height;
 		float maxY = roomRows.Length - 1;
+		List<Portal> portals = new List<Portal>();
 
 		//These loops scan through each tile of each row of the room
 		for (int y = 0; y < roomRows.Length; y++)
@@ -170,12 +184,62 @@ public class LayoutTiles : MonoBehaviour
 				switch (rawType)
 				{
 				case "X": //Starting position for the Mage
-					Mage.S.pos = ti.pos; //Uses the Mage Singleton
+					if (firstRoom)
+					{
+						Mage.S.pos = ti.pos; //Uses the Mage singleton
+						roomNumber = rNumStr; //Setting roomNumber now keeps any portals from moving the Mage to them in this first room
+						firstRoom = false;
+					}
+					break;
+				case "0": //Numbers are room portals (up to F in hexadecimal)
+				case "1":  //This allows portals to be placed in the Rooms.xml file
+				case "2": 
+				case "3": 
+				case "4": 
+				case "5": 
+				case "6": 
+				case "7": 
+				case "8": 
+				case "9": 
+				case "A": 
+				case "B": 
+				case "C": 
+				case "D": 
+				case "E": 
+				case "F": 
+					//Instantiate a Portal
+					GameObject pGO = Instantiate(portalPrefab) as GameObject;
+					Portal p = pGO.GetComponent<Portal>();
+					p.pos = ti.pos;
+					p.transform.parent = tileAnchor; //Attaching this to the tileAnchor means that the Portal will be Destroyed when a new room is built
+					p.toRoom = rawType;
+					portals.Add(p);
 					break;
 				}
-
 				//
 			}
 		}
+
+		//Position the Mage
+		foreach (Portal p in portals)
+		{
+			//If p.toRoom is the same as the room number the Mage just existed, then the Mage should enter this room through this Portal.
+			//Alternatively, if firstRoom == true and there was no X in the room (as a default Mage starting point), move the Mage to
+			//this Portal as a backup measure (if, for instance, you want to just load room number "5")
+			if (p.toRoom == roomNumber || firstRoom)
+			{
+				//If there's an X in the room, firstRoom will be set to false by the time the code gets here
+				Mage.S.StopWalking(); //Stop any Mage movement
+				Mage.S.pos = p.pos; //Move Mage to this Portal location
+
+				//Mage maintains her facing from the previous room, so there is no need to rotate her
+				//in order for her to enter this room facing the right direction
+				p.justArrived = true; //Tell the Portal that Mage has just arrived
+				firstRoom = false; //Stops a second Portal in this room from moving the Mage to it
+			}
+		}
+
+		//Finally, assign the roomNumber
+		roomNumber = rNumStr;
 	}
 }
