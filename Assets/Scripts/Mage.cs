@@ -83,8 +83,15 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 	public float elementRotDist = 0.5f; //Radius of rotation
 	public float elementRotSpeed = 0.5f; //Period of rotation
 	public int maxNumSelectedElements = 1;
+	public Color[] elementColors;
 
 	[Header("-------------------")]
+
+	public List<Vector3> linePts; //Points to be shown in the line
+	//Reminder:  Protected variables are between public and private. Public variables can be seen by anyone. Private variables can only be seen by this class.
+	//But protected variables can be seen by this class or any subclasses. Only public and [SerializeField] variables appear in the Inspector.
+	protected LineRenderer liner;
+	protected float lineZ = -0.1f; //Z depth of the line
 
 	public MPhase mPhase = MPhase.idle;
 	public List<MouseInfo> mouseInfos = new List<MouseInfo>();
@@ -111,6 +118,10 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 		//Find the characterTrans to rotate with Face()
 		characterTrans = transform.Find("CharacterTrans");
+
+		//Get the LineRenderer component and disable it
+		liner = GetComponent<LineRenderer>();
+		liner.enabled = false;
 	}
 
 	void Start()
@@ -310,6 +321,11 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			//Continuously walk toward the current mouseInfo pos
 			WalkTo(mouseInfos[mouseInfos.Count - 1].loc);
 		}
+		else
+		{
+			//This is a ground spell, so we need to draw a line
+			AddPointToLiner(mouseInfos[mouseInfos.Count - 1].loc); //Add the most recent MouseInfo.loc to liner
+		}
 	}
 
 	void MouseDragUp()
@@ -331,6 +347,13 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		{
 			//Stop walking when the drag is stopped
 			StopWalking();
+		}
+		else
+		{
+			//TODO: Cast the Spell
+
+			//Clear the liner
+			ClearLiner();
 		}
 	}
 
@@ -497,5 +520,44 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 			vec.z = -0.5f;
 			el.lPos = vec; //Set the posiiton of the Element_Sphere
 		}
+	}
+
+/* ======================================================================================== 
+ * ========================================================================================
+ * ===================================LINERENDERER CODE================================
+ * ========================================================================================
+ * ======================================================================================== 
+ */
+
+	//Add a new point to the line
+	void AddPointToLiner(Vector3 pt)
+	{
+		pt.z = lineZ; //Set the z of the pt to lineZ to elevate it slightly above the ground
+		linePts.Add(pt);
+		UpdateLiner();
+	}
+
+	//Update the LineRenderer with the new points
+	public void UpdateLiner()
+	{
+		//Get the type of the selectedElement
+		int el = (int) selectedElements[0].type;
+
+		//Set the line color based on that type
+		liner.SetColors(elementColors[el], elementColors[el]);
+
+		//Update the representation of the ground spell about to be cast
+		liner.SetVertexCount(linePts.Count); //Set the number of vertices
+		for (int i = 0; i < linePts.Count; i++) //Set the number of vertices
+		{
+			liner.SetPosition(i, linePts[i]); //Set each vertex
+		}
+		liner.enabled = true; //Enable the LineRenderer
+	}
+
+	public void ClearLiner()
+	{
+		liner.enabled = false; //Not only disable the LineRenderer but also...
+		linePts.Clear(); //clear all linePts
 	}
 }
