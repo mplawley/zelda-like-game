@@ -85,7 +85,14 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 	public int maxNumSelectedElements = 1;
 	public Color[] elementColors;
 
+	//These set the min and max distance between two line points
+	public float lineMinDelta = 0.1f;
+	public float lineMaxDelta = 0.5f;
+	public float lineMaxLength = 8f;
+
 	[Header("-------------------")]
+
+	public float totalLineLength;
 
 	public List<Vector3> linePts; //Points to be shown in the line
 	//Reminder:  Protected variables are between public and private. Public variables can be seen by anyone. Private variables can only be seen by this class.
@@ -524,20 +531,65 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 /* ======================================================================================== 
  * ========================================================================================
- * ===================================LINERENDERER CODE================================
+ * ===================================LINERENDERER CODE====================================
  * ========================================================================================
  * ======================================================================================== 
  */
 
-	//Add a new point to the line
+	//Add a new point to the line. This ignores the point if it's too close to existing ones
+	//and adds extra points if it's too far away
 	void AddPointToLiner(Vector3 pt)
 	{
 		pt.z = lineZ; //Set the z of the pt to lineZ to elevate it slightly above the ground
-		linePts.Add(pt);
-		UpdateLiner();
+
+		//Alwys add the point if linePts is empty...
+		if (linePts.Count == 0)
+		{
+			linePts.Add(pt);
+			totalLineLength = 0;
+			return; //...but wait for a second point to enable the LineRenderer
+		}
+
+		//If the line is too long already, return
+		if (totalLineLength > lineMaxLength)
+		{
+			return;
+		}
+
+		//If there is a previous point (pt0), then find how far pt is from it
+		Vector3 pt0 = linePts[linePts.Count - 1]; //Get the last point in linePts
+		Vector3 dir = pt - pt0;
+		float delta = dir.magnitude;
+		dir.Normalize();
+
+		totalLineLength += delta;
+
+		//If it's less than the min distance
+		if (delta < lineMinDelta)
+		{
+			//...then it's too close; don't add it
+			return;
+		}
+
+		//If it's further than the max distance then extra points..
+		if (delta > lineMaxDelta)
+		{
+			//...then add extra points in between
+			float numToAdd = Mathf.Ceil(delta / lineMaxDelta);
+			float midDelta = delta / numToAdd;
+			Vector3 ptMid;
+			for (int i = 1; i < numToAdd; i++)
+			{
+				ptMid = pt0 + (dir * midDelta * i);
+				linePts.Add(ptMid);
+			}
+		}
+
+		linePts.Add(pt); //Add the point
+		UpdateLiner(); //And finally update the line
 	}
 
-	//Update the LineRenderer with the new points
+	//Update the LineRend		erer with the new points
 	public void UpdateLiner()
 	{
 		//Get the type of the selectedElement

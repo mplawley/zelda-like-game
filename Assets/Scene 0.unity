@@ -567,6 +567,10 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 1, b: 0, a: 1}
   - {r: 0.24705882, g: 0.24705882, b: 0.24705882, a: 1}
+  lineMinDelta: 0.1
+  lineMaxDelta: 0.5
+  lineMaxLength: 8
+  totalLineLength: 0
   linePts: []
   mPhase: 0
   mouseInfos: []
@@ -608,8 +612,8 @@ LineRenderer:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 1}
   m_Parameters:
-    startWidth: 0.5
-    endWidth: 0.3
+    startWidth: 0.75
+    endWidth: 0.5
     m_StartColor:
       serializedVersion: 2
       rgba: 4294967295
