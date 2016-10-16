@@ -5,9 +5,11 @@ using System.Collections.Generic;
 public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 {
 	public float speed = 0.5f;
+	public float health = 10;
 
 	[Header("-----------")]
 
+	private float _maxHealth;
 	public Vector3 walkTarget;
 	public bool walking;
 	public Transform characterTrans;
@@ -16,6 +18,7 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 	void Awake()
 	{
 		characterTrans = transform.Find("CharacterTrans");
+		_maxHealth = health; //Used to put a top cap on healing
 	}
 
 	void Start()
@@ -87,5 +90,30 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 			//If not walking, velocity should be zero
 			rb.velocity = Vector3.zero;
 		}
+	}
+
+	//Damage this instance. Bu default, the damage is instant, but it can also be treated as damage over time,
+	//where the amt value would be the amount of damage done every second. Note: We can also use this code to heal the instance
+	public void Damage(float amt, bool damageOverTime = false)
+	{
+		//If it's DOT, then only damage the fractional amount for this frame
+		if (damageOverTime)
+		{
+			amt *= Time.deltaTime;
+		}
+
+		health -= amt;
+		health = Mathf.Min(_maxHealth, health); //Limit health if healing
+
+		if (health <= 0)
+		{
+			Die();
+		}
+	}
+
+	//TODO: Different death animations, drop loot for player, etc.
+	public void Die()
+	{
+		Destroy(gameObject);
 	}
 }
