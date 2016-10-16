@@ -447,14 +447,12 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 				//Otherwise, move toward walkTarget
 
 				rb.velocity = (walkTarget - pos).normalized * speed;
-				print ("rb.velocity: " + rb.velocity);
 			}
 		}
 		else
 		{
 			//If not walking, velocity should be zero
 			rb.velocity = Vector3.zero;
-			print ("rb.velocity: " + rb.velocity);
 		}
 	}
 
