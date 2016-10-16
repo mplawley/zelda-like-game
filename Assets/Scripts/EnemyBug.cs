@@ -156,6 +156,16 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 			dmg += entry.Value;
 		}
 
+		if (dmg > 0) //If this took damage...
+		{
+			//and if it is at full scale now (& not already damage scaling)...
+			if (characterTrans.localScale == Vector3.one)
+			{
+				//Start the damage scale animation
+				damageScaleStartTime = Time.time;
+			}
+		}
+
 		//The damage scale animation
 		float damU = (Time.time - damageScaleStartTime) / damageScaleDuration;
 		damU = Mathf.Min(1, damU); //Limit the max localScale to 1
