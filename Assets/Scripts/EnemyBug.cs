@@ -6,19 +6,26 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 {
 	public float speed = 0.5f;
 	public float health = 10;
+	public float damageScale = 0.8f;
+	public float damageScaleDuration = 0.25f;
 
 	[Header("-----------")]
 
+	private float damageScaleStartTime;
 	private float _maxHealth;
 	public Vector3 walkTarget;
 	public bool walking;
 	public Transform characterTrans;
 	Rigidbody rb;
 
+	//Stores damage for each element each frame
+	public Dictionary<ElementType, float> damageDict;
+
 	void Awake()
 	{
 		characterTrans = transform.Find("CharacterTrans");
 		_maxHealth = health; //Used to put a top cap on healing
+		ResetDamageDict();
 	}
 
 	void Start()
@@ -29,6 +36,21 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 	void Update()
 	{
 		WalkTo(Mage.S.pos);
+	}
+
+	void ResetDamageDict()
+	{
+		if (damageDict == null)
+		{
+			damageDict = new Dictionary<ElementType, float>();
+		}
+		damageDict.Clear();
+		damageDict.Add(ElementType.earth, 0);
+		damageDict.Add(ElementType.water, 0);
+		damageDict.Add(ElementType.air, 0);
+		damageDict.Add(ElementType.fire, 0);
+		damageDict.Add(ElementType.aether, 0);
+		damageDict.Add(ElementType.none, 0);
 	}
 
 /* ======================================================================
@@ -94,7 +116,7 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 
 	//Damage this instance. Bu default, the damage is instant, but it can also be treated as damage over time,
 	//where the amt value would be the amount of damage done every second. Note: We can also use this code to heal the instance
-	public void Damage(float amt, bool damageOverTime = false)
+	public void Damage(float amt, ElementType eT, bool damageOverTime = false)
 	{
 		//If it's DOT, then only damage the fractional amount for this frame
 		if (damageOverTime)
@@ -102,8 +124,48 @@ public class EnemyBug : PT_MonoBehaviour //NOT Monobehaviour
 			amt *= Time.deltaTime;
 		}
 
-		health -= amt;
+		//Treat different damage types differently (most are default)
+		switch (eT)
+		{
+		case ElementType.fire:
+			//Only the max damage from one fire source affects this instance
+			damageDict[eT] = Mathf.Max(amt, damageDict[eT]);
+			break;
+		case ElementType.air:
+			//air doesn't damage EnemyBugs, so do nothing
+			break;
+		default: 
+			//By default, damage is added to the other damage by the same element
+			damageDict[eT] += amt;
+			break;
+		}
+	}
+
+	//Once all the Updates() on all instances have been called, then LateUpdate() is called on all instances. LateUpdate() is still
+	//called by Unity automatically every frame, though.
+	void LateUpdate()
+	{
+		//Apply damage from the different element types
+
+		//Iteration through a Dictionary uses a KeyValuePair
+		//entry.Key is the ElementType, while entry.Value is the float
+		float dmg = 0;
+
+		foreach (KeyValuePair<ElementType, float> entry in damageDict)
+		{
+			dmg += entry.Value;
+		}
+
+		//The damage scale animation
+		float damU = (Time.time - damageScaleStartTime) / damageScaleDuration;
+		damU = Mathf.Min(1, damU); //Limit the max localScale to 1
+		float scl = (1 - damU) * damageScale + damU * 1;
+		characterTrans.localScale = scl * Vector3.one;
+
+		health -= dmg;
 		health = Mathf.Min(_maxHealth, health); //Limit health if healing
+
+		ResetDamageDict(); //Prepare for next frame
 
 		if (health <= 0)
 		{
