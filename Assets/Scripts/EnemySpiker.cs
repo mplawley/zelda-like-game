@@ -11,6 +11,11 @@ public class EnemySpiker : PT_MonoBehaviour, Enemy //NOT Monobehaviour
 		get { return _touchDamage; }
 		set { _touchDamage = value; }
 	}
+	public string typeString
+	{
+		get {return roomXMLString;}
+		set {roomXMLString = value;}
+	}
 
 	public float speed = 5f;
 	public string roomXMLString = "{";

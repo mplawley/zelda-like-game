@@ -11,6 +11,12 @@ public class EnemyBug : PT_MonoBehaviour, Enemy //NOT Monobehaviour
 		get { return _touchDamage; }
 		set { _touchDamage = value; }
 	}
+	public string typeString
+	{
+		get { return roomXMLString; }
+		set { roomXMLString = value; }
+	}
+	public string roomXMLString;
 
 	public float speed = 0.5f;
 	public float health = 10;
