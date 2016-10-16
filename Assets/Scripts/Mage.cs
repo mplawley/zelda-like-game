@@ -7,6 +7,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 /* ======================================================================================== 
  * ========================================================================================
@@ -92,7 +93,19 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 	public GameObject fireGroundSpellPrefab;
 
+	public float health = 4; //Total mage health
+	public float damageTime = -100; //Time that damage occurred. It's set to -100 so that the Mage doesn't act damaged immediately when the scene starts
+	public float knockBackDistance = 1; //Distance to move backward
+	public float knockBackDur = 0.5f; //Seconds to move backward
+	public float invincibleDur = 0.5f; //Seconds to be invisible
+	public int invTimesToBlink = 4; //Number of blinks while invincible
+
 	[Header("-------------------")]
+
+	private bool invincibleBool = false; //Is Mage invincible?
+	private bool knockbackBool = false; //Mage being knocked back?
+	private Vector3 knockbacDir; //Direction of knockback
+	private Transform viewCharacterTrans;
 
 	protected Transform spellAnchor; //The parent transform for all spells
 	public float totalLineLength;
@@ -128,6 +141,7 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 		//Find the characterTrans to rotate with Face()
 		characterTrans = transform.Find("CharacterTrans");
+		viewCharacterTrans = characterTrans.Find("View_Character");
 
 		//Get the LineRenderer component and disable it
 		liner = GetComponent<LineRenderer>();
@@ -434,6 +448,35 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 
 	void FixedUpdate() //Happens every physics step (i.e., 50 times.second)
 	{
+		if (invincibleBool)
+		{
+			//Get number [0..1]
+			float blinkU = (Time.time - damageTime) / invincibleDur;
+			blinkU *= invTimesToBlink; //Multiply by times to blink
+			blinkU %= 1.0f; //This modulo gives us the decimal remainder left when dividing blinkU by 1.0. e.g.: 3.85 % 1.0f is 0.85f;
+
+			bool visible = (blinkU > 0.5f);
+			if (Time.time - damageTime > invincibleDur)
+			{
+				invincibleBool = false;
+				visible = true; //Just to be sure
+			}
+
+			//Making the GameObject inactive makes it invisible
+			viewCharacterTrans.gameObject.SetActive(visible);
+		}
+
+		if (knockbackBool)
+		{
+			if (Time.time - damageTime > knockBackDur)
+			{
+				knockbackBool = false;
+			}
+			float knockbackSpeed = knockBackDistance / knockBackDur;
+			vel = knockbacDir * knockbackSpeed;
+			return; //Returns to avoid walking code below
+		}
+
 		if (walking) //If the Mage is walking
 		{
 			if ((walkTarget - pos).magnitude < speed * Time.fixedDeltaTime)
@@ -470,6 +513,47 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 				StopWalking();
 			}
 		}
+
+		//See if it's an EnemyBug
+		EnemyBug bug = coll.gameObject.GetComponent<EnemyBug>();
+
+		//If otherGO is an EnemyBug, pass otherGO to CollisionDamage()
+		if (bug != null)
+		{
+			CollisionDamage(otherGO);
+		}
+	}
+
+	void CollisionDamage(GameObject enemy)
+	{
+		//Don't take damage if you're already invincible
+		if (invincibleBool)
+		{
+			return;
+		}
+
+		//The Mage has been hit by an enemy
+		StopWalking();
+		ClearInput();
+
+		health -= 1; //Take 1 point of damage (for now)
+		if (health <= 0)
+		{
+			Die();
+			return;
+		}
+
+		damageTime = Time.time;
+		knockbackBool = true;
+		knockbacDir = (pos - enemy.transform.position).normalized;
+		invincibleBool = true;
+	}
+
+	//The Mage dies
+	void Die()
+	{
+		SceneManager.LoadScene("Scene 0"); //Reload the level
+		//TODO: Something more elegant
 	}
 
 	//Show where the player tapped

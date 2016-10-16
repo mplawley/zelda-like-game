@@ -1542,3 +1542,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ef68db2f5dba4392bdbf6b48bc43bfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speed: 0.5
+  health: 10
+  damageScale: 0.8
+  damageScaleDuration: 0.25
+  walkTarget: {x: 0, y: 0, z: 0}
+  walking: 0
+  characterTrans: {fileID: 0}
