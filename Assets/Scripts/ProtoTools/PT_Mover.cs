@@ -119,20 +119,21 @@ public class PT_Loc {
 		// Recursively solve this
 
 		// If there is only 1 PT_Loc in locs, return it
-		if (locs.Length == 1) return(locs[0]);
+		if (locs.Length == 1)
+			return(locs[0]);
 
-		int len = locs.Length-1;
+		int len = locs.Length - 1;
 		// Create locsL, which is all but the last element of locs
 		// e.g. if locs = [0,1,2,3,4] then locsL = [0,1,2,3]
 		PT_Loc[] locsL = new PT_Loc[len];
-		PT_Loc[].Copy(locs, 0, locsL, 0, len); //Not normally commented out
+		System.Array.Copy(locs, 0, locsL, 0, len); //I changed this line from PT_Loc[].Copy(...);
 		// Create locsR, which is all but the 0th element of locs
 		// e.g. if locs = [0,1,2,3,4] then locsR = [1,2,3,4]
 		PT_Loc[] locsR = new PT_Loc[len];
-		PT_Loc[].Copy(locs, 1, locsR, 0, len); //Not normally commented out
+		System.Array.Copy(locs, 1, locsR, 0, len); //I changed this line from PT_Loc[].Copy(...);
 
 		// The result is the Lerp of these two shorter Lists
-		PT_Loc res = Lerp( Bezier(u, locsL), Bezier(u, locsR), u );
+		PT_Loc res = Lerp( Bezier(u, locsL)	, Bezier(u, locsR), u );
 		return( res );
 	}
 
