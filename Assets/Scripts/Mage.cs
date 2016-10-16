@@ -524,6 +524,15 @@ public class Mage : PT_MonoBehaviour //NOT MonoBehaviour
 		}
 	}
 
+	void OnTriggerEnter(Collider other)
+	{
+		EnemySpiker spiker = other.GetComponent<EnemySpiker>();
+		if (spiker != null)
+		{
+			CollisionDamage(other.gameObject);
+		}
+	}
+
 	void CollisionDamage(GameObject enemy)
 	{
 		//Don't take damage if you're already invincible
