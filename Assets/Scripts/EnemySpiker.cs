@@ -2,8 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class EnemySpiker : PT_MonoBehaviour //NOT Monobehaviour
+public class EnemySpiker : PT_MonoBehaviour, Enemy //NOT Monobehaviour
 {
+	[SerializeField]
+	private float _touchDamage = 0.5f;
+	public float touchDamage
+	{
+		get { return _touchDamage; }
+		set { _touchDamage = value; }
+	}
+
 	public float speed = 5f;
 	public string roomXMLString = "{";
 
